@@ -33,22 +33,18 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.util.LruCache;
-
 import com.evernote.android.job.util.JobCat;
-
-import net.vrallev.android.cat.CatLog;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import net.vrallev.android.cat.CatLog;
 
 /**
  * @author rwondratschek
@@ -291,7 +287,6 @@ import java.util.concurrent.atomic.AtomicInteger;
         } else {
             try {
                 return mDbHelper.getWritableDatabase();
-
             } catch (SQLiteCantOpenDatabaseException e) {
                 CAT.e(e);
 
@@ -407,7 +402,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         }
     }
 
-    private static final class JobOpenHelper extends SQLiteOpenHelper {
+    private static final class JobOpenHelper extends TrayOpenHelper {
 
         private JobOpenHelper(Context context, String databasePath) {
             super(context, databasePath, null, DATABASE_VERSION, new JobStorageDatabaseErrorHandler());
