@@ -34,3 +34,6 @@ local.properties
 proguard-project.txt
 .DS_Store
 .tmp
+
+# Emacs
+.meghanada/
