@@ -35,6 +35,7 @@ import android.support.annotation.VisibleForTesting;
 import android.util.LruCache;
 import android.util.SparseArray;
 
+import com.evernote.android.job.util.Device;
 import com.evernote.android.job.util.JobCat;
 
 import net.vrallev.android.cat.CatLog;
@@ -162,28 +163,38 @@ import java.util.concurrent.TimeUnit;
 
         private final Job mJob;
         private final PowerManager.WakeLock mWakeLock;
+        private final boolean mVersionLollipopOrHigher;
 
         private JobCallable(Job job) {
             mJob = job;
 
             Context context = mJob.getContext();
-            mWakeLock = WakeLockUtil.acquireWakeLock(context, "JobExecutor", WAKE_LOCK_TIMEOUT);
+            mVersionLollipopOrHigher = Device.isVersionLollipopOrHigher();
+            if (!mVersionLollipopOrHigher) {
+                mWakeLock = WakeLockUtil.acquireWakeLock(context, "JobExecutor", WAKE_LOCK_TIMEOUT);
+            } else {
+                mWakeLock = null;
+            }
         }
 
         @Override
         public Job.Result call() throws Exception {
             try {
-                // just in case something was blocking and the wake lock is no longer acquired
-                WakeLockUtil.acquireWakeLock(mJob.getContext(), mWakeLock, WAKE_LOCK_TIMEOUT);
+                if (!mVersionLollipopOrHigher) {
+                    // just in case something was blocking and the wake lock is no longer acquired
+                    WakeLockUtil.acquireWakeLock(mJob.getContext(), mWakeLock, WAKE_LOCK_TIMEOUT);
+                }
                 return runJob();
 
             } finally {
                 markJobAsFinished(mJob);
 
-                if (mWakeLock == null || !mWakeLock.isHeld()) {
-                    CAT.w("Wake lock was not held after job %s was done. The job took too long to complete. This could have unintended side effects on your app.", mJob);
+                if (!mVersionLollipopOrHigher) {
+                    if (mWakeLock == null || !mWakeLock.isHeld()) {
+                        CAT.w("Wake lock was not held after job %s was done. The job took too long to complete. This could have unintended side effects on your app.", mJob);
+                    }
+                    WakeLockUtil.releaseWakeLock(mWakeLock);
                 }
-                WakeLockUtil.releaseWakeLock(mWakeLock);
             }
         }
 

@@ -120,4 +120,8 @@ public final class Device {
         // figure this out
         return false;
     }
+
+    public static boolean isVersionLollipopOrHigher() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
 }
